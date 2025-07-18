@@ -158,6 +158,14 @@ function App() {
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
   const langItemRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
+  
+  // Separate refs and state for mobile
+  const [mobileLangDropdownOpen, setMobileLangDropdownOpen] = useState(false);
+  const [mobileHoveredLang, setMobileHoveredLang] = useState<string | null>(null);
+  const [mobileHoveredLangRect, setMobileHoveredLangRect] = useState<MaskRect | null>(null);
+  const mobileLangDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileLangMenuRef = useRef<HTMLDivElement>(null);
+  const mobileLangItemRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
 
   useEffect(() => {
     const detectedLang = detectLanguage();
@@ -198,7 +206,7 @@ function App() {
   }, []);
 
 
-  // Track hovered language item position
+  // Track hovered language item position for desktop
   useEffect(() => {
     if (hoveredLang && langItemRefs.current[hoveredLang] && langMenuRef.current) {
       const hoveredItem = langItemRefs.current[hoveredLang];
@@ -217,6 +225,26 @@ function App() {
       setHoveredLangRect(null);
     }
   }, [hoveredLang]);
+
+  // Track hovered language item position for mobile
+  useEffect(() => {
+    if (mobileHoveredLang && mobileLangItemRefs.current[mobileHoveredLang] && mobileLangMenuRef.current) {
+      const hoveredItem = mobileLangItemRefs.current[mobileHoveredLang];
+      if (!hoveredItem || !mobileLangMenuRef.current) return;
+      
+      const menuRect = mobileLangMenuRef.current.getBoundingClientRect();
+      const itemRect = hoveredItem.getBoundingClientRect();
+      
+      setMobileHoveredLangRect({
+        x: itemRect.left - menuRect.left,
+        y: itemRect.top - menuRect.top,
+        width: itemRect.width,
+        height: itemRect.height
+      });
+    } else {
+      setMobileHoveredLangRect(null);
+    }
+  }, [mobileHoveredLang]);
 
   // Prepare navigation items
   const navItems = [
@@ -352,56 +380,80 @@ function App() {
         <div className="max-w-full mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold text-firstlab-orange">FirstLab</h1>
           <div 
-            ref={langDropdownRef}
+            ref={mobileLangDropdownRef}
             className="relative rounded-lg px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 shadow-sm cursor-pointer flex items-center justify-center min-w-[80px]"
-            onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+            onClick={() => setMobileLangDropdownOpen(!mobileLangDropdownOpen)}
           >
             <div className="flex items-center space-x-1">
               <i className="ri-global-fill text-firstlab-orange text-xs"></i>
               <span className="text-black/80 font-medium text-xs">
                 {lang === 'zh' ? '中' : lang === 'en' ? 'EN' : '日'}
               </span>
-              <i className={`ri-arrow-down-s-line text-black/60 text-xs transition-transform duration-200 ${langDropdownOpen ? 'rotate-180' : ''}`}></i>
+              <i className={`ri-arrow-down-s-line text-black/60 text-xs transition-transform duration-200 ${mobileLangDropdownOpen ? 'rotate-180' : ''}`}></i>
             </div>
             
-            {langDropdownOpen && (
+            {mobileLangDropdownOpen && (
               <div 
-                ref={langMenuRef}
+                ref={mobileLangMenuRef}
                 className="absolute top-full right-0 mt-1 w-full min-w-[80px] rounded-lg overflow-hidden z-50"
               >
                 {/* Background layer */}
                 <div 
                   className="absolute inset-0 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg rounded-lg"
-                  style={getTransparentMaskStyle(hoveredLangRect)}
+                  style={getTransparentMaskStyle(mobileHoveredLangRect)}
                 ></div>
                 
                 {/* Content */}
                 <div className="relative">
                   <button
+                    ref={(el) => { if (mobileLangItemRefs.current) mobileLangItemRefs.current['zh'] = el; }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setLang('zh');
-                      setLangDropdownOpen(false);
+                      setMobileLangDropdownOpen(false);
+                    }}
+                    onMouseEnter={() => {
+                      const rect = mobileLangItemRefs.current?.['zh']?.getBoundingClientRect();
+                      if (rect) setMobileHoveredLangRect(rect);
+                    }}
+                    onMouseLeave={() => {
+                      setMobileHoveredLangRect(null);
                     }}
                     className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
                   >
                     中文
                   </button>
                   <button
+                    ref={(el) => { if (mobileLangItemRefs.current) mobileLangItemRefs.current['en'] = el; }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setLang('en');
-                      setLangDropdownOpen(false);
+                      setMobileLangDropdownOpen(false);
+                    }}
+                    onMouseEnter={() => {
+                      const rect = mobileLangItemRefs.current?.['en']?.getBoundingClientRect();
+                      if (rect) setMobileHoveredLangRect(rect);
+                    }}
+                    onMouseLeave={() => {
+                      setMobileHoveredLangRect(null);
                     }}
                     className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
                   >
                     EN
                   </button>
                   <button
+                    ref={(el) => { if (mobileLangItemRefs.current) mobileLangItemRefs.current['ja'] = el; }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setLang('ja');
-                      setLangDropdownOpen(false);
+                      setMobileLangDropdownOpen(false);
+                    }}
+                    onMouseEnter={() => {
+                      const rect = mobileLangItemRefs.current?.['ja']?.getBoundingClientRect();
+                      if (rect) setMobileHoveredLangRect(rect);
+                    }}
+                    onMouseLeave={() => {
+                      setMobileHoveredLangRect(null);
                     }}
                     className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
                   >
