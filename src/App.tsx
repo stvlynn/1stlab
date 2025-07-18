@@ -348,20 +348,23 @@ function App() {
       </header>
 
       {/* Hero Section */}
-      <section id="home" className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-gradient-to-br from-firstlab-orange/5 via-transparent to-transparent pointer-events-none"></div>
-        <div className="absolute top-20 right-20 w-32 h-32 bg-firstlab-orange/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="absolute bottom-20 left-20 w-24 h-24 bg-firstlab-orange/5 rounded-full blur-xl pointer-events-none"></div>
+      <section id="home" className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Background image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/hero-background.jpg')" }}
+        >
+          <div className="absolute inset-0 bg-black/40"></div>
+        </div>
         
         <div className="max-w-6xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-black mb-4 leading-tight">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight">
             {t('hero.welcome', lang)}
           </h2>
           <p className="text-2xl md:text-3xl text-firstlab-orange mb-6 font-medium">
             {t('hero.tagline', lang)}
           </p>
-          <p className="text-lg md:text-xl text-black/70 max-w-4xl mx-auto mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl text-white/80 max-w-4xl mx-auto mb-10 leading-relaxed">
             {t('firstlab.description', lang)}
           </p>
           
