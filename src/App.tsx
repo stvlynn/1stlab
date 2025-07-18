@@ -158,11 +158,7 @@ function App() {
   
   // Separate refs and state for mobile
   const [mobileLangDropdownOpen, setMobileLangDropdownOpen] = useState(false);
-  const [mobileHoveredLang, setMobileHoveredLang] = useState<string | null>(null);
-  const [mobileHoveredLangRect, setMobileHoveredLangRect] = useState<MaskRect | null>(null);
   const mobileLangDropdownRef = useRef<HTMLDivElement>(null);
-  const mobileLangMenuRef = useRef<HTMLDivElement>(null);
-  const mobileLangItemRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
 
   useEffect(() => {
     const detectedLang = detectLanguage();
@@ -226,25 +222,7 @@ function App() {
     }
   }, [hoveredLang]);
 
-  // Track hovered language item position for mobile
-  useEffect(() => {
-    if (mobileHoveredLang && mobileLangItemRefs.current[mobileHoveredLang] && mobileLangMenuRef.current) {
-      const hoveredItem = mobileLangItemRefs.current[mobileHoveredLang];
-      if (!hoveredItem || !mobileLangMenuRef.current) return;
-      
-      const menuRect = mobileLangMenuRef.current.getBoundingClientRect();
-      const itemRect = hoveredItem.getBoundingClientRect();
-      
-      setMobileHoveredLangRect({
-        x: itemRect.left - menuRect.left,
-        y: itemRect.top - menuRect.top,
-        width: itemRect.width,
-        height: itemRect.height
-      });
-    } else {
-      setMobileHoveredLangRect(null);
-    }
-  }, [mobileHoveredLang]);
+
 
   // Prepare navigation items
   const navItems = [
@@ -393,73 +371,37 @@ function App() {
             </div>
             
             {mobileLangDropdownOpen && (
-              <div 
-                ref={mobileLangMenuRef}
-                className="absolute top-full right-0 mt-1 w-full min-w-[80px] rounded-lg overflow-hidden z-50"
-              >
-                {/* Background layer */}
-                <div 
-                  className="absolute inset-0 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg rounded-lg"
-                  style={getTransparentMaskStyle(mobileHoveredLangRect)}
-                ></div>
-                
-                {/* Content */}
-                <div className="relative">
-                  <button
-                    ref={(el) => { if (mobileLangItemRefs.current) mobileLangItemRefs.current['zh'] = el; }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLang('zh');
-                      setMobileLangDropdownOpen(false);
-                    }}
-                    onMouseEnter={() => {
-                      const rect = mobileLangItemRefs.current?.['zh']?.getBoundingClientRect();
-                      if (rect) setMobileHoveredLangRect(rect);
-                    }}
-                    onMouseLeave={() => {
-                      setMobileHoveredLangRect(null);
-                    }}
-                    className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
-                  >
-                    中文
-                  </button>
-                  <button
-                    ref={(el) => { if (mobileLangItemRefs.current) mobileLangItemRefs.current['en'] = el; }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLang('en');
-                      setMobileLangDropdownOpen(false);
-                    }}
-                    onMouseEnter={() => {
-                      const rect = mobileLangItemRefs.current?.['en']?.getBoundingClientRect();
-                      if (rect) setMobileHoveredLangRect(rect);
-                    }}
-                    onMouseLeave={() => {
-                      setMobileHoveredLangRect(null);
-                    }}
-                    className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
-                  >
-                    EN
-                  </button>
-                  <button
-                    ref={(el) => { if (mobileLangItemRefs.current) mobileLangItemRefs.current['ja'] = el; }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLang('ja');
-                      setMobileLangDropdownOpen(false);
-                    }}
-                    onMouseEnter={() => {
-                      const rect = mobileLangItemRefs.current?.['ja']?.getBoundingClientRect();
-                      if (rect) setMobileHoveredLangRect(rect);
-                    }}
-                    onMouseLeave={() => {
-                      setMobileHoveredLangRect(null);
-                    }}
-                    className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
-                  >
-                    日本語
-                  </button>
-                </div>
+              <div className="absolute top-full right-0 mt-1 w-full min-w-[80px] rounded-lg overflow-hidden z-50 bg-white/90 backdrop-blur-xl border border-white/30 shadow-lg">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLang('zh');
+                    setMobileLangDropdownOpen(false);
+                  }}
+                  className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
+                >
+                  中文
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLang('en');
+                    setMobileLangDropdownOpen(false);
+                  }}
+                  className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
+                >
+                  EN
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLang('ja');
+                    setMobileLangDropdownOpen(false);
+                  }}
+                  className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
+                >
+                  日本語
+                </button>
               </div>
             )}
           </div>
