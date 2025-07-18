@@ -2,12 +2,36 @@ import React, { useEffect, useState, useRef } from 'react';
 import { t, detectLanguage, Language } from './i18n';
 import 'remixicon/fonts/remixicon.css';
 
+// Transparent mask style generator
+const getTransparentMaskStyle = (rect: {x: number, y: number, width: number, height: number} | null) => {
+  if (!rect) return {};
+  
+  // Semi-transparent gradient for a softer effect
+  const maskGradient = `radial-gradient(ellipse ${rect.width}px ${rect.height}px at ${rect.x + rect.width/2}px ${rect.y + rect.height/2}px, rgba(255,255,255,0.3) 0px, rgba(255,255,255,0.3) ${Math.max(rect.width/2, rect.height/2)}px, black ${Math.max(rect.width/2, rect.height/2) + 2}px)`;
+  
+  return {
+    maskImage: maskGradient,
+    WebkitMaskImage: maskGradient,
+    maskSize: '100% 100%',
+    WebkitMaskSize: '100% 100%',
+  };
+};
+
 function App() {
   const [lang, setLang] = useState<Language>('en');
   const [activeSection, setActiveSection] = useState('home');
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [hoveredLang, setHoveredLang] = useState<string | null>(null);
+  const [activeItemRect, setActiveItemRect] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [hoveredItemRect, setHoveredItemRect] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [hoveredLangRect, setHoveredLangRect] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const navItemRefs = useRef<{[key: string]: HTMLAnchorElement | null}>({});
+  const langItemRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
 
   useEffect(() => {
     const detectedLang = detectLanguage();
@@ -47,79 +71,156 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Track active item position for transparent mask effect
+  useEffect(() => {
+    if (activeSection && navItemRefs.current[activeSection] && navRef.current) {
+      const activeItem = navItemRefs.current[activeSection];
+      if (!activeItem) return;
+      
+      const navRect = navRef.current.getBoundingClientRect();
+      const itemRect = activeItem.getBoundingClientRect();
+      
+      setActiveItemRect({
+        x: itemRect.left - navRect.left,
+        y: itemRect.top - navRect.top,
+        width: itemRect.width,
+        height: itemRect.height
+      });
+    }
+  }, [activeSection, lang]); // Include lang to update on language change
+
+  // Track hovered item position for transparent mask effect
+  useEffect(() => {
+    if (hoveredSection && navItemRefs.current[hoveredSection] && navRef.current) {
+      const hoveredItem = navItemRefs.current[hoveredSection];
+      if (!hoveredItem) return;
+      
+      const navRect = navRef.current.getBoundingClientRect();
+      const itemRect = hoveredItem.getBoundingClientRect();
+      
+      setHoveredItemRect({
+        x: itemRect.left - navRect.left,
+        y: itemRect.top - navRect.top,
+        width: itemRect.width,
+        height: itemRect.height
+      });
+    } else {
+      setHoveredItemRect(null);
+    }
+  }, [hoveredSection, lang]);
+
+  // Track hovered language item position
+  useEffect(() => {
+    if (hoveredLang && langItemRefs.current[hoveredLang] && langMenuRef.current) {
+      const hoveredItem = langItemRefs.current[hoveredLang];
+      if (!hoveredItem) return;
+      
+      const menuRect = langMenuRef.current.getBoundingClientRect();
+      const itemRect = hoveredItem.getBoundingClientRect();
+      
+      setHoveredLangRect({
+        x: itemRect.left - menuRect.left,
+        y: itemRect.top - menuRect.top,
+        width: itemRect.width,
+        height: itemRect.height
+      });
+    } else {
+      setHoveredLangRect(null);
+    }
+  }, [hoveredLang]);
+
   return (
     <div className="min-h-screen bg-white text-black">
       {/* Frosted glass header */}
       <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          {/* Large rounded rectangle navigation with frosted glass */}
-          <nav 
-            className="relative rounded-32 px-8 py-4 flex items-center space-x-8 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg"
-          >
-            <h1 className="text-2xl font-bold text-firstlab-orange drop-shadow-sm">{t('firstlab.title', lang)}</h1>
-            <div className="flex space-x-6">
-              <a 
-                href="#home" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
-                  setActiveSection('home');
-                }}
-                className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                  activeSection === 'home' 
-                    ? 'bg-white/20 text-firstlab-orange shadow-md' 
-                    : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                }`}
-              >
-                {t('nav.home', lang)}
-              </a>
-              <a 
-                href="#features" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-                  setActiveSection('features');
-                }}
-                className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                  activeSection === 'features' 
-                    ? 'bg-white/20 text-firstlab-orange shadow-md' 
-                    : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                }`}
-              >
-                {t('nav.features', lang)}
-              </a>
-              <a 
-                href="#guidebook" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('guidebook')?.scrollIntoView({ behavior: 'smooth' });
-                  setActiveSection('guidebook');
-                }}
-                className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                  activeSection === 'community' 
-                    ? 'bg-white/20 text-firstlab-orange shadow-md' 
-                    : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                }`}
-              >
-                {t('nav.community', lang)}
-              </a>
-              <a 
-                href="#guidebook" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('guidebook')?.scrollIntoView({ behavior: 'smooth' });
-                  setActiveSection('guidebook');
-                }}
-                className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                  activeSection === 'guidebook' 
-                    ? 'bg-white/20 text-firstlab-orange shadow-md' 
-                    : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                }`}
-              >
-                {t('nav.guidebook', lang)}
-              </a>
-            </div>
-          </nav>
+          {/* Advanced navigation with true transparent active item */}
+          <div className="relative" ref={navRef}>
+            {/* Background frosted glass layer with dynamic mask */}
+            <div 
+              className="absolute inset-0 rounded-32 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg"
+              style={getTransparentMaskStyle(hoveredItemRect || activeItemRect)}
+            ></div>
+            
+            {/* Content layer */}
+            <nav className="relative rounded-32 px-8 py-4 flex items-center space-x-8">
+              <h1 className="text-2xl font-bold text-firstlab-orange drop-shadow-sm z-10">{t('firstlab.title', lang)}</h1>
+              <div className="flex space-x-6">
+                <a 
+                  ref={el => { navItemRefs.current['home'] = el; }}
+                  href="#home" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+                    setActiveSection('home');
+                  }}
+                  onMouseEnter={() => setHoveredSection('home')}
+                  onMouseLeave={() => setHoveredSection(null)}
+                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
+                    activeSection === 'home' 
+                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
+                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
+                  }`}
+                >
+                  {t('nav.home', lang)}
+                </a>
+                <a 
+                  ref={el => { navItemRefs.current['features'] = el; }}
+                  href="#features" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                    setActiveSection('features');
+                  }}
+                  onMouseEnter={() => setHoveredSection('features')}
+                  onMouseLeave={() => setHoveredSection(null)}
+                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
+                    activeSection === 'features' 
+                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
+                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
+                  }`}
+                >
+                  {t('nav.features', lang)}
+                </a>
+                <a 
+                  ref={el => { navItemRefs.current['community'] = el; }}
+                  href="#community" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' });
+                    setActiveSection('community');
+                  }}
+                  onMouseEnter={() => setHoveredSection('community')}
+                  onMouseLeave={() => setHoveredSection(null)}
+                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
+                    activeSection === 'community' 
+                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
+                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
+                  }`}
+                >
+                  {t('nav.community', lang)}
+                </a>
+                <a 
+                  ref={el => { navItemRefs.current['guidebook'] = el; }}
+                  href="#guidebook" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('guidebook')?.scrollIntoView({ behavior: 'smooth' });
+                    setActiveSection('guidebook');
+                  }}
+                  onMouseEnter={() => setHoveredSection('guidebook')}
+                  onMouseLeave={() => setHoveredSection(null)}
+                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
+                    activeSection === 'guidebook' 
+                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
+                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
+                  }`}
+                >
+                  {t('nav.guidebook', lang)}
+                </a>
+              </div>
+            </nav>
+          </div>
           
           {/* Language selector matching header design */}
           <div 
@@ -137,38 +238,57 @@ function App() {
             
             {langDropdownOpen && (
               <div 
-                className="absolute top-full right-0 mt-2 w-full min-w-[120px] bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg rounded-32 overflow-hidden z-50"
+                ref={langMenuRef}
+                className="absolute top-full right-0 mt-2 w-full min-w-[120px] rounded-32 overflow-hidden z-50"
               >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLang('zh');
-                    setLangDropdownOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-center text-black/80 hover:bg-white/30 transition-colors text-sm hover:text-firstlab-orange border-b border-white/20 last:border-b-0"
-                >
-                  中文
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLang('en');
-                    setLangDropdownOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-center text-black/80 hover:bg-white/30 transition-colors text-sm hover:text-firstlab-orange border-b border-white/20 last:border-b-0"
-                >
-                  EN
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLang('ja');
-                    setLangDropdownOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-center text-black/80 hover:bg-white/30 transition-colors text-sm hover:text-firstlab-orange border-b border-white/20 last:border-b-0"
-                >
-                  日本語
-                </button>
+                {/* Background layer with mask for hover effect */}
+                <div 
+                  className="absolute inset-0 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg rounded-32"
+                  style={getTransparentMaskStyle(hoveredLangRect)}
+                ></div>
+                
+                {/* Content layer */}
+                <div className="relative">
+                  <button
+                    ref={el => { langItemRefs.current['zh'] = el; }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLang('zh');
+                      setLangDropdownOpen(false);
+                    }}
+                    onMouseEnter={() => setHoveredLang('zh')}
+                    onMouseLeave={() => setHoveredLang(null)}
+                    className="w-full px-4 py-2 text-center text-black/80 hover:text-firstlab-orange transition-colors text-sm border-b border-white/20 last:border-b-0"
+                  >
+                    中文
+                  </button>
+                  <button
+                    ref={el => { langItemRefs.current['en'] = el; }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLang('en');
+                      setLangDropdownOpen(false);
+                    }}
+                    onMouseEnter={() => setHoveredLang('en')}
+                    onMouseLeave={() => setHoveredLang(null)}
+                    className="w-full px-4 py-2 text-center text-black/80 hover:text-firstlab-orange transition-colors text-sm border-b border-white/20 last:border-b-0"
+                  >
+                    EN
+                  </button>
+                  <button
+                    ref={el => { langItemRefs.current['ja'] = el; }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLang('ja');
+                      setLangDropdownOpen(false);
+                    }}
+                    onMouseEnter={() => setHoveredLang('ja')}
+                    onMouseLeave={() => setHoveredLang(null)}
+                    className="w-full px-4 py-2 text-center text-black/80 hover:text-firstlab-orange transition-colors text-sm border-b border-white/20 last:border-b-0"
+                  >
+                    日本語
+                  </button>
+                </div>
               </div>
             )}
           </div>
