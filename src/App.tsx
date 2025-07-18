@@ -373,11 +373,43 @@ function App() {
               href={t('community.discord_url', lang)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center px-10 py-4 bg-firstlab-orange text-white rounded-32 font-semibold hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-firstlab-orange/25"
+              className="inline-flex items-center px-10 py-4 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg text-black rounded-32 font-semibold hover:bg-white/30 transition-all duration-300 transform hover:scale-105"
             >
               <i className="ri-discord-fill mr-2 text-lg"></i>
               {t('community.join', lang)}
             </a>
+          </div>
+          
+          {/* Logo Carousel */}
+          <div className="mt-24 w-full max-w-6xl overflow-hidden">
+            <div className="flex animate-scroll space-x-12 py-6">
+              {/* First set of logos */}
+              <img src="/logos/cursor.svg" alt="Cursor" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/dify-color.svg" alt="Dify" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/huggingface-color.svg" alt="Hugging Face" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/hunyuan-color.svg" alt="Hunyuan" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/langchain-color.svg" alt="LangChain" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/n8n-color.svg" alt="n8n" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/mcp.svg" alt="MCP" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              
+              {/* Duplicate set for seamless loop */}
+              <img src="/logos/cursor.svg" alt="Cursor" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/dify-color.svg" alt="Dify" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/huggingface-color.svg" alt="Hugging Face" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/hunyuan-color.svg" alt="Hunyuan" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/langchain-color.svg" alt="LangChain" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/n8n-color.svg" alt="n8n" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/mcp.svg" alt="MCP" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              
+              {/* Additional duplicate set to ensure seamless loop */}
+              <img src="/logos/cursor.svg" alt="Cursor" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/dify-color.svg" alt="Dify" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/huggingface-color.svg" alt="Hugging Face" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/hunyuan-color.svg" alt="Hunyuan" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/langchain-color.svg" alt="LangChain" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/n8n-color.svg" alt="n8n" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+              <img src="/logos/mcp.svg" alt="MCP" className="h-16 w-auto flex-shrink-0 hover:scale-125 transition-transform duration-300 cursor-pointer filter brightness-0 invert opacity-75" />
+            </div>
           </div>
         </div>
       </section>
@@ -390,28 +422,55 @@ function App() {
           </h3>
           
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            <div className="group bg-white/70 backdrop-blur-md rounded-32 p-8 border border-black/5 shadow-lg hover:shadow-xl hover:bg-white/80 transition-all duration-300 transform hover:-translate-y-1">
-              <div className="w-18 h-18 bg-firstlab-orange/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-firstlab-orange/20 transition-all duration-300">
-                <i className="ri-translate-2 text-2xl text-firstlab-orange"></i>
+            {/* Multilingual Support Card */}
+            <div className="group relative h-80 rounded-32 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: 'url(https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80)'
+                }}
+              />
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="absolute bottom-0 left-0 right-0 p-8">
+                <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-32 p-6 group-hover:bg-white/30 transition-all duration-300">
+                  <h4 className="text-xl font-semibold text-white mb-3">{t('features.multilingual', lang)}</h4>
+                  <p className="text-white/90 leading-relaxed">{t('features.multilingual_desc', lang)}</p>
+                </div>
               </div>
-              <h4 className="text-xl font-semibold text-black mb-3">{t('features.multilingual', lang)}</h4>
-              <p className="text-black/70 leading-relaxed">{t('features.multilingual_desc', lang)}</p>
             </div>
 
-            <div className="group bg-white/70 backdrop-blur-md rounded-32 p-8 border border-black/5 shadow-lg hover:shadow-xl hover:bg-white/80 transition-all duration-300 transform hover:-translate-y-1">
-              <div className="w-18 h-18 bg-firstlab-orange/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-firstlab-orange/20 transition-all duration-300">
-                <i className="ri-open-source-fill text-2xl text-firstlab-orange"></i>
+            {/* Open Source Spirit Card */}
+            <div className="group relative h-80 rounded-32 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: 'url(https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80)'
+                }}
+              />
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="absolute bottom-0 left-0 right-0 p-8">
+                <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-32 p-6 group-hover:bg-white/30 transition-all duration-300">
+                  <h4 className="text-xl font-semibold text-white mb-3">{t('features.opensource', lang)}</h4>
+                  <p className="text-white/90 leading-relaxed">{t('features.opensource_desc', lang)}</p>
+                </div>
               </div>
-              <h4 className="text-xl font-semibold text-black mb-3">{t('features.opensource', lang)}</h4>
-              <p className="text-black/70 leading-relaxed">{t('features.opensource_desc', lang)}</p>
             </div>
 
-            <div className="group bg-white/70 backdrop-blur-md rounded-32 p-8 border border-black/5 shadow-lg hover:shadow-xl hover:bg-white/80 transition-all duration-300 transform hover:-translate-y-1">
-              <div className="w-18 h-18 bg-firstlab-orange/10 rounded-full flex items-center justify-center mb-6 group-hover:bg-firstlab-orange/20 transition-all duration-300">
-                <i className="ri-global-fill text-2xl text-firstlab-orange"></i>
+            {/* Global Connection Card */}
+            <div className="group relative h-80 rounded-32 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: 'url(https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80)'
+                }}
+              />
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="absolute bottom-0 left-0 right-0 p-8">
+                <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-32 p-6 group-hover:bg-white/30 transition-all duration-300">
+                  <h4 className="text-xl font-semibold text-white mb-3">{t('features.global', lang)}</h4>
+                  <p className="text-white/90 leading-relaxed">{t('features.global_desc', lang)}</p>
+                </div>
               </div>
-              <h4 className="text-xl font-semibold text-black mb-3">{t('features.global', lang)}</h4>
-              <p className="text-black/70 leading-relaxed">{t('features.global_desc', lang)}</p>
             </div>
           </div>
         </div>
