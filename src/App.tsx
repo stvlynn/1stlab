@@ -53,7 +53,6 @@ const TransparentMaskNavigation: React.FC<TransparentMaskNavigationProps> = ({
   items, 
   className = '' 
 }) => {
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null); // Used for state tracking
   const [maskRect, setMaskRect] = useState<MaskRect | null>(null);
   const [isHovering, setIsHovering] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -95,13 +94,11 @@ const TransparentMaskNavigation: React.FC<TransparentMaskNavigationProps> = ({
   // Handle hover
   const handleMouseEnter = (itemId: string) => {
     setIsHovering(true);
-    setHoveredItem(itemId);
     updateMaskPosition(itemId);
   };
   
   const handleMouseLeave = () => {
     setIsHovering(false);
-    setHoveredItem(null);
     // Return to active item with linear animation
     if (activeItem) {
       updateMaskPosition(activeItem);
@@ -176,6 +173,9 @@ function App() {
     const handleClickOutside = (event: MouseEvent) => {
       if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
         setLangDropdownOpen(false);
+      }
+      if (mobileLangDropdownRef.current && !mobileLangDropdownRef.current.contains(event.target as Node)) {
+        setMobileLangDropdownOpen(false);
       }
     };
 
