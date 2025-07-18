@@ -268,8 +268,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      {/* Frosted glass header */}
-      <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-4">
+      {/* Desktop Header - 保持原始设计 */}
+      <header ref={headerRef} className="hidden md:fixed md:top-0 md:left-0 md:right-0 md:z-50 md:px-4 md:sm:px-6 md:lg:px-8 md:py-4 md:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Advanced navigation with animated transparent mask */}
           <TransparentMaskNavigation items={navItems} />
@@ -346,6 +346,102 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* Mobile Header - 新顶栏（品牌名+语言选项） */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 bg-white/90 backdrop-blur-xl border-b border-black/10">
+        <div className="max-w-full mx-auto flex justify-between items-center">
+          <h1 className="text-xl font-bold text-firstlab-orange">FirstLab</h1>
+          <div 
+            ref={langDropdownRef}
+            className="relative rounded-lg px-3 py-1.5 bg-white/20 backdrop-blur-xl border border-white/30 shadow-sm cursor-pointer flex items-center justify-center min-w-[80px]"
+            onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+          >
+            <div className="flex items-center space-x-1">
+              <i className="ri-global-fill text-firstlab-orange text-xs"></i>
+              <span className="text-black/80 font-medium text-xs">
+                {lang === 'zh' ? '中' : lang === 'en' ? 'EN' : '日'}
+              </span>
+              <i className={`ri-arrow-down-s-line text-black/60 text-xs transition-transform duration-200 ${langDropdownOpen ? 'rotate-180' : ''}`}></i>
+            </div>
+            
+            {langDropdownOpen && (
+              <div 
+                ref={langMenuRef}
+                className="absolute top-full right-0 mt-1 w-full min-w-[80px] rounded-lg overflow-hidden z-50"
+              >
+                {/* Background layer */}
+                <div 
+                  className="absolute inset-0 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg rounded-lg"
+                  style={getTransparentMaskStyle(hoveredLangRect)}
+                ></div>
+                
+                {/* Content */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLang('zh');
+                      setLangDropdownOpen(false);
+                    }}
+                    className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
+                  >
+                    中文
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLang('en');
+                      setLangDropdownOpen(false);
+                    }}
+                    className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
+                  >
+                    EN
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLang('ja');
+                      setLangDropdownOpen(false);
+                    }}
+                    className="w-full px-3 py-1.5 text-center text-black/80 hover:text-firstlab-orange transition-colors text-xs border-b border-white/20 last:border-b-0"
+                  >
+                    日本語
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-2 py-2 bg-white/90 backdrop-blur-xl border-t border-black/10">
+        <div className="max-w-full mx-auto flex justify-around items-center">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                setActiveSection(item.id);
+              }}
+              className={`flex flex-col items-center space-y-0.5 px-2 py-1 rounded-lg transition-all duration-300 flex-1 ${
+                activeSection === item.id
+                  ? 'text-firstlab-orange'
+                  : 'text-black/60 hover:text-firstlab-orange'
+              }`}
+            >
+              <i className={`text-lg ${
+                item.id === 'home' ? 'ri-home-4-line' :
+                item.id === 'features' ? 'ri-star-line' :
+                item.id === 'community' ? 'ri-discord-line' :
+                'ri-book-open-line'
+              }`}></i>
+              <span className="text-xs font-medium">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* Hero Section */}
       <section id="home" className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
