@@ -1,36 +1,162 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { t, detectLanguage, Language } from './i18n';
 import 'remixicon/fonts/remixicon.css';
 
-// Transparent mask style generator
-const getTransparentMaskStyle = (rect: {x: number, y: number, width: number, height: number} | null) => {
+// Interface for mask position
+interface MaskRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// Interface for transparent mask navigation props
+interface TransparentMaskNavigationProps {
+  items: {
+    id: string;
+    label: string;
+    href: string;
+    isActive: boolean;
+    onClick: (e: React.MouseEvent) => void;
+  }[];
+  className?: string;
+}
+
+// Transparent mask style generator with animation support
+const getTransparentMaskStyle = (
+  rect: MaskRect | null,
+  transition: string = 'none'
+) => {
   if (!rect) return {};
   
+  // Adjust mask size to match button borders exactly
+  const padding = 2; // Border width compensation
+  const maskWidth = rect.width + padding * 2;
+  const maskHeight = rect.height + padding * 2;
+  const centerX = rect.x + rect.width / 2;
+  const centerY = rect.y + rect.height / 2;
+  
   // Semi-transparent gradient for a softer effect
-  const maskGradient = `radial-gradient(ellipse ${rect.width}px ${rect.height}px at ${rect.x + rect.width/2}px ${rect.y + rect.height/2}px, rgba(255,255,255,0.3) 0px, rgba(255,255,255,0.3) ${Math.max(rect.width/2, rect.height/2)}px, black ${Math.max(rect.width/2, rect.height/2) + 2}px)`;
+  const maskGradient = `radial-gradient(ellipse ${maskWidth}px ${maskHeight}px at ${centerX}px ${centerY}px, rgba(255,255,255,0.3) 0px, rgba(255,255,255,0.3) ${Math.max(maskWidth/2, maskHeight/2)}px, black ${Math.max(maskWidth/2, maskHeight/2) + 1}px)`;
   
   return {
     maskImage: maskGradient,
     WebkitMaskImage: maskGradient,
     maskSize: '100% 100%',
     WebkitMaskSize: '100% 100%',
+    transition,
   };
+};
+
+// Reusable transparent mask navigation component
+const TransparentMaskNavigation: React.FC<TransparentMaskNavigationProps> = ({ 
+  items, 
+  className = '' 
+}) => {
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null); // Used for state tracking
+  const [maskRect, setMaskRect] = useState<MaskRect | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<{[key: string]: HTMLAnchorElement | null}>({});
+  
+  const activeItem = items.find(item => item.isActive)?.id || null;
+  
+  // Update mask position
+  const updateMaskPosition = useCallback((itemId: string | null) => {
+    if (!itemId || !navRef.current || !itemRefs.current[itemId]) {
+      setMaskRect(null);
+      return;
+    }
+    
+    const navRect = navRef.current.getBoundingClientRect();
+    const itemElement = itemRefs.current[itemId];
+    if (!itemElement) {
+      setMaskRect(null);
+      return;
+    }
+    
+    const itemRect = itemElement.getBoundingClientRect();
+    
+    setMaskRect({
+      x: itemRect.left - navRect.left,
+      y: itemRect.top - navRect.top,
+      width: itemRect.width,
+      height: itemRect.height
+    });
+  }, []);
+  
+  // Initialize active item position
+  useEffect(() => {
+    if (activeItem && !isHovering) {
+      updateMaskPosition(activeItem);
+    }
+  }, [activeItem, isHovering, updateMaskPosition]);
+  
+  // Handle hover
+  const handleMouseEnter = (itemId: string) => {
+    setIsHovering(true);
+    setHoveredItem(itemId);
+    updateMaskPosition(itemId);
+  };
+  
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    setHoveredItem(null);
+    // Return to active item with linear animation
+    if (activeItem) {
+      updateMaskPosition(activeItem);
+    }
+  };
+  
+  // Determine animation type based on state
+  const transition = isHovering 
+    ? 'mask-image 0.3s cubic-bezier(0.4, 0, 0.2, 1), -webkit-mask-image 0.3s cubic-bezier(0.4, 0, 0.2, 1)' // Non-linear (ease-out)
+    : 'mask-image 0.2s linear, -webkit-mask-image 0.2s linear'; // Linear return
+  
+  return (
+    <div className={`relative ${className}`} ref={navRef}>
+      {/* Background frosted glass layer with dynamic mask */}
+      <div 
+        className="absolute inset-0 rounded-32 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg"
+        style={getTransparentMaskStyle(maskRect, transition)}
+      />
+      
+      {/* Content layer */}
+      <nav className="relative rounded-32 px-8 py-4 flex items-center space-x-8">
+        <h1 className="text-2xl font-bold text-firstlab-orange drop-shadow-sm z-10">FirstLab</h1>
+        <div className="flex space-x-6">
+          {items.map(item => (
+            <a
+              key={item.id}
+              ref={el => { itemRefs.current[item.id] = el; }}
+              href={item.href}
+              onClick={item.onClick}
+              onMouseEnter={() => handleMouseEnter(item.id)}
+              onMouseLeave={handleMouseLeave}
+              className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
+                item.isActive
+                  ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
+                  : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
+              }`}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+    </div>
+  );
 };
 
 function App() {
   const [lang, setLang] = useState<Language>('en');
   const [activeSection, setActiveSection] = useState('home');
-  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [hoveredLang, setHoveredLang] = useState<string | null>(null);
-  const [activeItemRect, setActiveItemRect] = useState<{x: number, y: number, width: number, height: number} | null>(null);
-  const [hoveredItemRect, setHoveredItemRect] = useState<{x: number, y: number, width: number, height: number} | null>(null);
-  const [hoveredLangRect, setHoveredLangRect] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [hoveredLangRect, setHoveredLangRect] = useState<MaskRect | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
-  const navRef = useRef<HTMLDivElement>(null);
-  const navItemRefs = useRef<{[key: string]: HTMLAnchorElement | null}>({});
   const langItemRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
 
   useEffect(() => {
@@ -71,49 +197,12 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track active item position for transparent mask effect
-  useEffect(() => {
-    if (activeSection && navItemRefs.current[activeSection] && navRef.current) {
-      const activeItem = navItemRefs.current[activeSection];
-      if (!activeItem) return;
-      
-      const navRect = navRef.current.getBoundingClientRect();
-      const itemRect = activeItem.getBoundingClientRect();
-      
-      setActiveItemRect({
-        x: itemRect.left - navRect.left,
-        y: itemRect.top - navRect.top,
-        width: itemRect.width,
-        height: itemRect.height
-      });
-    }
-  }, [activeSection, lang]); // Include lang to update on language change
-
-  // Track hovered item position for transparent mask effect
-  useEffect(() => {
-    if (hoveredSection && navItemRefs.current[hoveredSection] && navRef.current) {
-      const hoveredItem = navItemRefs.current[hoveredSection];
-      if (!hoveredItem) return;
-      
-      const navRect = navRef.current.getBoundingClientRect();
-      const itemRect = hoveredItem.getBoundingClientRect();
-      
-      setHoveredItemRect({
-        x: itemRect.left - navRect.left,
-        y: itemRect.top - navRect.top,
-        width: itemRect.width,
-        height: itemRect.height
-      });
-    } else {
-      setHoveredItemRect(null);
-    }
-  }, [hoveredSection, lang]);
 
   // Track hovered language item position
   useEffect(() => {
     if (hoveredLang && langItemRefs.current[hoveredLang] && langMenuRef.current) {
       const hoveredItem = langItemRefs.current[hoveredLang];
-      if (!hoveredItem) return;
+      if (!hoveredItem || !langMenuRef.current) return;
       
       const menuRect = langMenuRef.current.getBoundingClientRect();
       const itemRect = hoveredItem.getBoundingClientRect();
@@ -129,98 +218,61 @@ function App() {
     }
   }, [hoveredLang]);
 
+  // Prepare navigation items
+  const navItems = [
+    {
+      id: 'home',
+      label: t('nav.home', lang),
+      href: '#home',
+      isActive: activeSection === 'home',
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+        setActiveSection('home');
+      }
+    },
+    {
+      id: 'features',
+      label: t('nav.features', lang),
+      href: '#features',
+      isActive: activeSection === 'features',
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+        setActiveSection('features');
+      }
+    },
+    {
+      id: 'community',
+      label: t('nav.community', lang),
+      href: '#community',
+      isActive: activeSection === 'community',
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' });
+        setActiveSection('community');
+      }
+    },
+    {
+      id: 'guidebook',
+      label: t('nav.guidebook', lang),
+      href: '#guidebook',
+      isActive: activeSection === 'guidebook',
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        document.getElementById('guidebook')?.scrollIntoView({ behavior: 'smooth' });
+        setActiveSection('guidebook');
+      }
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-white text-black">
       {/* Frosted glass header */}
       <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          {/* Advanced navigation with true transparent active item */}
-          <div className="relative" ref={navRef}>
-            {/* Background frosted glass layer with dynamic mask */}
-            <div 
-              className="absolute inset-0 rounded-32 bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg"
-              style={getTransparentMaskStyle(hoveredItemRect || activeItemRect)}
-            ></div>
-            
-            {/* Content layer */}
-            <nav className="relative rounded-32 px-8 py-4 flex items-center space-x-8">
-              <h1 className="text-2xl font-bold text-firstlab-orange drop-shadow-sm z-10">{t('firstlab.title', lang)}</h1>
-              <div className="flex space-x-6">
-                <a 
-                  ref={el => { navItemRefs.current['home'] = el; }}
-                  href="#home" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
-                    setActiveSection('home');
-                  }}
-                  onMouseEnter={() => setHoveredSection('home')}
-                  onMouseLeave={() => setHoveredSection(null)}
-                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                    activeSection === 'home' 
-                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
-                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                  }`}
-                >
-                  {t('nav.home', lang)}
-                </a>
-                <a 
-                  ref={el => { navItemRefs.current['features'] = el; }}
-                  href="#features" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-                    setActiveSection('features');
-                  }}
-                  onMouseEnter={() => setHoveredSection('features')}
-                  onMouseLeave={() => setHoveredSection(null)}
-                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                    activeSection === 'features' 
-                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
-                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                  }`}
-                >
-                  {t('nav.features', lang)}
-                </a>
-                <a 
-                  ref={el => { navItemRefs.current['community'] = el; }}
-                  href="#community" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('community')?.scrollIntoView({ behavior: 'smooth' });
-                    setActiveSection('community');
-                  }}
-                  onMouseEnter={() => setHoveredSection('community')}
-                  onMouseLeave={() => setHoveredSection(null)}
-                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                    activeSection === 'community' 
-                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
-                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                  }`}
-                >
-                  {t('nav.community', lang)}
-                </a>
-                <a 
-                  ref={el => { navItemRefs.current['guidebook'] = el; }}
-                  href="#guidebook" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('guidebook')?.scrollIntoView({ behavior: 'smooth' });
-                    setActiveSection('guidebook');
-                  }}
-                  onMouseEnter={() => setHoveredSection('guidebook')}
-                  onMouseLeave={() => setHoveredSection(null)}
-                  className={`relative rounded-32 px-4 py-2 transition-all duration-300 hover:scale-105 ${
-                    activeSection === 'guidebook' 
-                      ? 'text-firstlab-orange border border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.5)]' 
-                      : 'text-black/80 hover:text-firstlab-orange hover:bg-white/15 hover:shadow-sm'
-                  }`}
-                >
-                  {t('nav.guidebook', lang)}
-                </a>
-              </div>
-            </nav>
-          </div>
+          {/* Advanced navigation with animated transparent mask */}
+          <TransparentMaskNavigation items={navItems} />
           
           {/* Language selector matching header design */}
           <div 
